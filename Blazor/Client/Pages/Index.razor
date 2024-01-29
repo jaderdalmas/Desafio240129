@@ -1,0 +1,57 @@
+﻿@page "/"
+@using Blazor.Shared
+@inject HttpClient Http
+
+<PageTitle>@title</PageTitle>
+    <h1>@title</h1>
+
+@if (books == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <em>Author or ISBN: </em>
+    <input type="text" @bind-value="@filter" />
+    <input type="button" value="Search" @onclick="@OnInitializedAsync" />
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Publisher</th>
+                <th>Authors</th>
+                <th>Type</th>
+                <th>ISBN</th>
+                <th>Category</th>
+                <th>Available Copies</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in books)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td></td>
+                    <td>@($"{book.FirstName} {book.LastName}")</td>
+                    <td>@book.Type</td>
+                    <td>@book.ISBN</td>
+                    <td>@book.Category</td>
+                    <td>@($"{book.TotalCopies - book.CopiesInUse} / {book.TotalCopies}")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private string title => "Royal Library";
+    private string filter = string.Empty;
+    private IEnumerable<BookModel>? books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = string.IsNullOrEmpty(filter) ? string.Empty : $"?filter={filter}";
+        books = await Http.GetFromJsonAsync<IEnumerable<BookModel>>($"Book{query}");
+    }
+}
